@@ -1,11 +1,9 @@
 #include <stdio.h>
-
-int main(void) {
+int main(void){
+    char id[100];
+    scanf("%s",  id);
+    printf("%s??!",id);
     
-    char id[50];  
-    
-    scanf("%s", id);         
-    printf("%s?\?!", id);    
-                           
     return 0;
+    
 }
