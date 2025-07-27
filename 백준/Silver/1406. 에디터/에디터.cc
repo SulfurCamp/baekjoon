@@ -1,64 +1,97 @@
 #include <iostream>
-#include <list> // STL 양방향 연결 리스트
 #include <string>
+#include <algorithm>
 
 using namespace std;
 
-int main()
-{
-	string s;
-	cin >> s;
+const int MX = 1000005; 
+// 문자열의 최대길이 + 1 노드를 배열로 흉내내는 연결리스트
+char dat[MX];           
+// pre는 이전 노드의 인덱스, nxt는 다음 노드의 인덱스를 저장
+int pre[MX], nxt[MX];   
+// 다음 사용할 인덱스
+int unused = 1;     
+// 커서 위치
+int cursor = 0;         
 
-	list<char> editor;
+void insert(int addr, char c) {
+    dat[unused] = c;
+    pre[unused] = addr;
+    nxt[unused] = nxt[addr];
+    if (nxt[addr] != -1)
+        pre[nxt[addr]] = unused;
+    nxt[addr] = unused;
+    unused++;
+}
 
-	for (int i = 0; i < s.size(); i++)
-	{
-		editor.push_back(s[i]); // 입력받은 문자열을 한 글자씩 리스트에 추가
-	}
-	list<char>::iterator cursor = editor.end(); // 커서를 문자열의 끝에 위치시킴
-	int a; // 명령어의 개수
-	cin >> a;
+void erase(int addr) {
+    nxt[pre[addr]] = nxt[addr];
+    if (nxt[addr] != -1)
+        pre[nxt[addr]] = pre[addr];
+}
 
-	while (a--) {
-    char cmd;
-    cin >> cmd;
+void traverse() {
+    int cur = nxt[0];
+    while (cur != -1) {
+        cout << dat[cur];
+        cur = nxt[cur];
+    }
+    cout << '\n';
+}
 
-    switch (cmd) {
-        case 'L': // 커서를 왼쪽으로
-            if (cursor != editor.begin()) {
-                cursor--;
+int main() {
+
+    fill(pre, pre + MX, -1);
+    fill(nxt, nxt + MX, -1);
+    // fill 함수 시작주소, 끝주소 를 지정하고 모든 원소를 채울값으로 초기화한다.
+	// 여기선 pre부터 pre+MX까지 -1로 초기화하고 nxt도 마찬가지로 -1로 초기화한다.
+    string s;
+    cin >> s;
+
+    // 초기 문자열을 리스트에 삽입
+    for (int i = 0; i < s.size(); i++) {
+        char c = s[i];
+        insert(cursor, c);
+        cursor = nxt[cursor];
+    }
+
+    int m;
+    cin >> m;
+
+    while (m--) {
+        char cmd;
+        cin >> cmd;
+
+        switch (cmd) {
+        case 'L':  // 왼쪽으로 이동
+            if (pre[cursor] != -1)
+                cursor = pre[cursor];
+            break;
+
+        case 'D':  // 오른쪽으로 이동
+            if (nxt[cursor] != -1)
+                cursor = nxt[cursor];
+            break;
+
+        case 'B':
+            if (pre[cursor] != -1) {
+                cursor = pre[cursor];
+                erase(nxt[cursor]);
             }
             break;
 
-        case 'D': // 커서를 오른쪽으로
-            if (cursor != editor.end()) {
-                cursor++;
-            }
-            break;
-
-        case 'B': // 커서 왼쪽 문자 삭제
-            if (cursor != editor.begin()) {
-                cursor = editor.erase(--cursor);
-            }
-            break;
-
-        case 'P': { // 문자 삽입 (중괄호로 변수 범위 명시)
+        case 'P': { // 커서 앞에 문자 삽입
             char c;
             cin >> c;
-            editor.insert(cursor, c);
+            insert(cursor, c);
+            cursor = nxt[cursor];
             break;
         }
-
-        default:
-            // 유효하지 않은 명령은 무시 (필요하면 에러처리 가능)
+        default:   // 예외 명령어 처리 (안 써도 됨)
             break;
         }
     }
-
-	// 리스트의 모든 요소를 출력
-	for (char c : editor)
-	{
-		cout << c;
-	}
-	cout << endl;
-} 
+    traverse();
+    
+    return 0;
+}
