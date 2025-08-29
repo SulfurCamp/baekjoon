@@ -1,60 +1,67 @@
 #include <iostream>
-#include <vector>
-#include <queue>
+#include <stack>
+
 using namespace std;
 
-int main() {
+struct Node 
+{ 
+    int r;
+    int c; 
+}; // 좌표 저장용 (행 r, 열 c)
 
-    int T; 
+int main() {
+    
+    int T;
     cin >> T;
+
+    int dr[4] = {0, 0, 1, -1};
+    int dc[4] = {1, -1, 0, 0};
+
     while (T--) {
-        int M, N, K;
+        int M, N, K; // M: 가로(열 수), N: 세로(행 수)
         cin >> M >> N >> K;
 
-        const int SZ = N * M;
-        vector<char> g(SZ, 0);     
-        vector<char> vis(SZ, 0);   
+        int grid[50][50] = {0};
+        bool visited[50][50] = {false};
 
-        
         for (int i = 0; i < K; ++i) {
-            int X, Y; cin >> X >> Y;
-            g[Y * M + X] = 1;
+            int x, y;
+            cin >> x >> y;
+            grid[y][x] = 1;
         }
 
-        int worms = 0;
-        
-        for (int idx = 0; idx < SZ; ++idx) {
-            if (!g[idx] || vis[idx]) continue;
+        int worms = 0; 
 
-            ++worms;
-            queue<int> q;
-            vis[idx] = 1;
-            q.push(idx);
+        for (int r = 0; r < N; ++r) {
+            for (int c = 0; c < M; ++c) {
+                if (grid[r][c] == 1 && !visited[r][c]) {
+                    // 새로운 덩어리 발견 → DFS 시작
+                    worms++;
+                    stack<Node> st;
+                    st.push({r, c});
+                    visited[r][c] = true;
 
-            while (!q.empty()) {
-                int cur = q.front(); q.pop();
-                int r = cur / M, c = cur % M;
+                    // 반복적 DFS
+                    while (!st.empty()) {
+                        Node cur = st.top(); st.pop();
 
-                if (r - 1 >= 0) {
-                    int nidx = (r - 1) * M + c;
-                    if (g[nidx] && !vis[nidx]) { vis[nidx] = 1; q.push(nidx); }
-                }
-                if (r + 1 < N) {
-                    int nidx = (r + 1) * M + c;
-                    if (g[nidx] && !vis[nidx]) { vis[nidx] = 1; q.push(nidx); }
-                }
-                if (c - 1 >= 0) {
-                    int nidx = r * M + (c - 1);
-                    if (g[nidx] && !vis[nidx]) { vis[nidx] = 1; q.push(nidx); }
-                }
-                if (c + 1 < M) {
-                    int nidx = r * M + (c + 1);
-                    if (g[nidx] && !vis[nidx]) { vis[nidx] = 1; q.push(nidx); }
+                        for (int k = 0; k < 4; ++k) {
+                            int nr = cur.r + dr[k];
+                            int nc = cur.c + dc[k];
+
+                            if (0 <= nr && nr < N && 0 <= nc && nc < M
+                                && grid[nr][nc] == 1 && !visited[nr][nc]) {
+                                visited[nr][nc] = true;
+                                st.push({nr, nc});
+                            }
+                        }
+                    }
                 }
             }
         }
 
         cout << worms << '\n';
     }
+
     return 0;
 }
